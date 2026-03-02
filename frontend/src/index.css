@@ -189,8 +189,107 @@ body {
   max-width: 960px;
 }
 
+.full-step {
+  max-width: none;
+}
+
 .upload-hero {
   margin-bottom: 12px;
+}
+
+.landing-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.landing-hero h2 {
+  margin: 0 0 6px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(28px, 4vw, 48px);
+}
+
+.landing-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.landing-video-shell {
+  position: relative;
+  min-height: 300px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.landing-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-video-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(3, 8, 14, 0.88) 20%, rgba(4, 15, 26, 0.55) 58%, rgba(4, 17, 28, 0.8) 100%),
+    radial-gradient(circle at 20% 50%, rgba(55, 224, 138, 0.16), transparent 40%);
+}
+
+.landing-video-content {
+  position: relative;
+  z-index: 2;
+  padding: clamp(18px, 3vw, 34px);
+  max-width: 640px;
+}
+
+.landing-video-content h2 {
+  margin: 6px 0 10px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 0.98;
+}
+
+.landing-video-content p {
+  margin: 0;
+  color: #bfd4e5;
+  font-size: 14px;
+}
+
+.field-label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 6px 0 4px;
+}
+
+.field-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: rgba(6, 16, 29, 0.8);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 12px;
 }
 
 .panel {
@@ -270,24 +369,198 @@ body {
     linear-gradient(145deg, #071321 0%, #0c2030 100%);
 }
 
-.region-map {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.75;
+.india-stage {
+  min-height: 620px;
 }
 
-.region-map polygon {
+.real-map-stage {
+  padding: 0;
+}
+
+.real-map {
+  width: 100%;
+  height: 100%;
+  min-height: 620px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.leaflet-container {
+  background: #071523;
+  color: #0f2030;
+  font-family: "Manrope", sans-serif;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(5, 16, 29, 0.88);
+  color: #d9e9f7;
+  border-bottom: 1px solid rgba(97, 173, 235, 0.28);
+}
+
+.leaflet-control-attribution {
+  background: rgba(4, 12, 20, 0.7) !important;
+  color: #9eb6ca;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: rgba(9, 20, 33, 0.96);
+  color: #e6f4ff;
+  border: 1px solid rgba(97, 173, 235, 0.28);
+}
+
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 12px;
+}
+
+.leaflet-popup-content img {
+  border: 1px solid rgba(97, 173, 235, 0.35);
+}
+
+.state-strip {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.state-chip {
+  border: 1px solid var(--line);
+  background: rgba(6, 16, 29, 0.8);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.state-chip span {
+  margin-left: 6px;
+  color: var(--amber);
+}
+
+.state-chip.on {
+  color: var(--green);
+  border-color: rgba(55, 224, 138, 0.45);
+}
+
+.state-chip.on span {
+  color: var(--green);
+}
+
+.map-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.crumb {
+  border: 1px solid var(--line);
+  background: rgba(6, 16, 29, 0.8);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.crumb.active {
+  color: var(--green);
+  border-color: rgba(55, 224, 138, 0.45);
+}
+
+.crumb.static {
+  opacity: 0.8;
+}
+
+.state-drill {
+  position: absolute;
+  inset: 0;
+  padding: 12px;
+}
+
+.state-drill-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.state-drill-head p {
+  margin: 0;
+  color: #bfe2fa;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.03em;
+}
+
+.state-map {
+  width: 100%;
+  height: calc(100% - 48px);
+}
+
+.state-shell {
   fill: rgba(57, 215, 255, 0.08);
-  stroke: rgba(84, 193, 248, 0.45);
+  stroke: rgba(85, 187, 255, 0.45);
   stroke-width: 2px;
 }
 
-.region-map text {
-  fill: rgba(191, 229, 255, 0.82);
-  font-size: 24px;
-  letter-spacing: 0.02em;
+.ward-shape path {
+  fill: rgba(8, 23, 37, 0.65);
+  stroke: rgba(89, 190, 255, 0.55);
+  stroke-width: 1.4px;
+  cursor: pointer;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.ward-shape text {
+  fill: rgba(218, 239, 255, 0.95);
+  font-size: 14px;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.ward-shape:hover path {
+  fill: rgba(57, 215, 255, 0.22);
+}
+
+.ward-shape.active path {
+  fill: rgba(55, 224, 138, 0.28);
+  stroke: rgba(55, 224, 138, 1);
+  filter: drop-shadow(0 0 8px rgba(55, 224, 138, 0.45));
+}
+
+.ward-board {
+  position: relative;
+  min-height: 260px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 25% 24%, rgba(55, 224, 138, 0.12), transparent 35%),
+    radial-gradient(circle at 72% 60%, rgba(57, 215, 255, 0.14), transparent 40%),
+    linear-gradient(145deg, #071321 0%, #102538 100%);
+}
+
+.evidence-card {
+  grid-column: span 2;
+}
+
+.evidence-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.evidence-image {
+  width: 100%;
+  max-height: 190px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
 }
 
 .city-layer {
@@ -629,6 +902,53 @@ progress {
 }
 
 @media (max-width: 860px) {
+  .landing-hero {
+    display: grid;
+    gap: 8px;
+  }
+
+  .landing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-video-shell {
+    min-height: 230px;
+  }
+
+  .evidence-card {
+    grid-column: span 1;
+  }
+
+  .evidence-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .india-stage {
+    min-height: 480px;
+  }
+
+  .real-map {
+    min-height: 480px;
+  }
+
+  .state-drill-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .state-drill-head p {
+    font-size: 16px;
+  }
+
+  .ward-shape text {
+    font-size: 11px;
+  }
+
   .layer-tabs {
     grid-template-columns: 1fr;
   }
