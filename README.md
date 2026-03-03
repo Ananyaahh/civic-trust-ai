@@ -237,26 +237,25 @@ Simple service heartbeat.
 
 ---
 
-## Submission Highlights (Why This Can Win)
 
-- Real geospatial UX, not mock screens.
-- Strong civic relevance with India-local drilldown.
-- Practical AI + reliability fallback (demo-proof).
-- End-to-end evidence lifecycle: upload -> map -> insight -> action.
-- High-clarity interface suitable for municipal command center use.
+**Key Features**
+1. **Evidence-to-Action Upload Pipeline**: Users upload garbage/complaint images and map them to exact `State -> City -> Ward`, creating a structured, location-linked incident record.
+2. **Real Interactive Geo Explorer**: Leaflet-based slippy map with zoom/pan, state/city/ward drilldown, and map marker interactions tied to live incident data.
+3. **Complaint Intensity Heatmap**: Toggleable heat layer visualizing concentration and severity of dumps/complaints for faster hotspot detection.
+4. **Building-Level Focus Navigation**: City and ward clicks trigger map fly-to transitions, helping operators move from national oversight to local dump-site context quickly.
+5. **Uploaded Evidence on Map**: The uploaded image is pinned to its mapped ward and shown in map popups with analysis metadata (type, confidence, emissions).
+6. **AI Waste Analysis Layer**: Image-based waste classification with confidence scores and structured response payload for downstream civic workflows.
+7. **Trust & Verification Signals**: Ward-level trust scoring, status lifecycle (`Reported/Verified/Resolved`), and anomaly-style flags to support credible decision-making.
+8. **Emission Intelligence**: CO2e/CH4/N2O contextual metrics for operational impact and environmental accountability.
+9. **Policy Simulation + ESG View**: What-if controls (composting, collection acceleration, drone assist) with projected impact and budget efficiency outputs.
+10. **Civic Concierge Query Interface**: Context-aware assistant for state/city/ward-level issue lookup, explanation, and mitigation guidance.
+11. **Location Assist Mode**: Landing page supports manual location selection plus auto-detection via browser geolocation and IP/VPN fallback to reduce reporting friction.
+12. **Operational Resilience**: Graceful backend/AI fallback mode keeps demo and workflow functional even if model dependencies or keys are unavailable.
 
----
-
-## Known Limitations / Next Upgrades
-
-- Current geographies use curated points; next step is official GeoJSON boundaries.
-- Add persistent database for incident lifecycle history.
-- Add role-based auth for citizen/municipality/investor views.
-- Add notification integrations (WhatsApp/email/webhooks).
-- Add 3D twin layer (Cesium/Mapbox) for full digital twin realism.
-
----
-
-## Team Pitch One-Liner
-
-CivicTrust AI turns a single waste complaint photo into a transparent, map-verified, AI-scored municipal action workflow from India-level oversight down to ward-level intervention.
+**Innovation Highlights**
+1. **Geo-Linked AI Governance Loop**: Combines image intelligence + map drilldown + trust scoring in one closed loop from citizen evidence to municipal action.
+2. **India-First Multi-Scale Civic Intelligence**: Designed around Indian administrative hierarchy and local operational needs rather than generic global dashboards.
+3. **Dual-Mode Location Intelligence**: Manual mapping plus automated GPS/IP-assisted mapping improves usability while preserving operator control.
+4. **Heatmap + Drilldown Fusion**: Macro-intensity awareness (heat layer) and micro-investigation (ward/building zoom) in a single continuous interface.
+5. **Evidence-Backed Transparency**: Every mapped incident can carry visual proof and confidence metadata, reducing ambiguity in closure and compliance reporting.
+6. **Submission-Ready Reliability Design**: System remains demonstrable and useful under partial outages through deterministic fallback paths, critical for real civic deployments.
