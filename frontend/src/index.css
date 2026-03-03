@@ -292,6 +292,10 @@ body {
   font-size: 12px;
 }
 
+.location-actions {
+  margin-bottom: 6px;
+}
+
 .panel {
   border: 1px solid var(--line);
   background: var(--surface);
@@ -323,7 +327,7 @@ body {
 
 .controls-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }

@@ -99,6 +99,24 @@ function formatCoords(lat, lng) {
   return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 }
 
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getWardComplaintCount(ward) {
+  const statusLoad = ward.status === "Reported" ? 26 : ward.status === "Verified" ? 12 : 5;
+  return Math.round(ward.methane * 1.1 + (100 - ward.trust) * 0.55 + statusLoad);
+}
+
 export default function App() {
   const [activeLayer, setActiveLayer] = useState(0);
   const [unlockedLayer, setUnlockedLayer] = useState(0);
@@ -112,6 +130,7 @@ export default function App() {
   const [showCo2e, setShowCo2e] = useState(true);
   const [showCh4, setShowCh4] = useState(true);
   const [showN2o, setShowN2o] = useState(false);
+  const [showHeatLayer, setShowHeatLayer] = useState(true);
 
   const [composting, setComposting] = useState(35);
   const [collectionBoost, setCollectionBoost] = useState(20);
@@ -131,11 +150,15 @@ export default function App() {
   const [uploadStateId, setUploadStateId] = useState("tn");
   const [uploadCityId, setUploadCityId] = useState("tn-che");
   const [uploadWardId, setUploadWardId] = useState("tn-che-z05");
+  const [currentPosition, setCurrentPosition] = useState(null);
+  const [locationMessage, setLocationMessage] = useState("");
+  const [locating, setLocating] = useState(false);
 
   const fileRef = useRef(null);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerLayerRef = useRef(null);
+  const heatLayerRef = useRef(null);
 
   const selectedState = useMemo(
     () => INDIA_STATES.find((state) => state.id === selectedStateId) || INDIA_STATES[0],
@@ -203,6 +226,72 @@ export default function App() {
     setUploadWardId(firstWard?.id || "");
   }
 
+  function mapNearestLocation(lat, lng, sourceLabel) {
+    const allWards = Object.entries(WARDS_BY_CITY).flatMap(([cityId, wards]) =>
+      wards.map((ward) => ({ cityId, ward }))
+    );
+    if (!allWards.length) return;
+
+    let best = allWards[0];
+    let bestDistance = haversineKm(lat, lng, best.ward.lat, best.ward.lng);
+    for (const item of allWards) {
+      const d = haversineKm(lat, lng, item.ward.lat, item.ward.lng);
+      if (d < bestDistance) {
+        best = item;
+        bestDistance = d;
+      }
+    }
+
+    const stateId =
+      Object.keys(CITY_BY_STATE).find((sid) => (CITY_BY_STATE[sid] || []).some((city) => city.id === best.cityId)) || "tn";
+
+    setUploadStateId(stateId);
+    setUploadCityId(best.cityId);
+    setUploadWardId(best.ward.id);
+    setSelectedStateId(stateId);
+    setSelectedCityId(best.cityId);
+    setSelectedWardId(best.ward.id);
+    setCurrentPosition({ lat, lng });
+    setLocationMessage(
+      `${sourceLabel}: nearest mapped ward is ${best.ward.name} (${bestDistance.toFixed(1)} km away).`
+    );
+  }
+
+  async function detectCurrentLocation() {
+    setLocating(true);
+    setLocationMessage("Detecting your location...");
+    try {
+      if (navigator.geolocation) {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 9000,
+            maximumAge: 120000,
+          });
+        });
+        mapNearestLocation(pos.coords.latitude, pos.coords.longitude, "GPS location");
+        setLocating(false);
+        return;
+      }
+    } catch (_err) {
+      // fallback to IP lookup below
+    }
+
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      if (typeof data.latitude === "number" && typeof data.longitude === "number") {
+        mapNearestLocation(data.latitude, data.longitude, "IP/VPN location");
+      } else {
+        setLocationMessage("Could not resolve location from IP.");
+      }
+    } catch (_err) {
+      setLocationMessage("Location detection failed. Please choose manually.");
+    } finally {
+      setLocating(false);
+    }
+  }
+
   async function runAuditUpload() {
     if (!uploadFile) return;
     setUploadLoading(true);
@@ -253,19 +342,31 @@ export default function App() {
 
   function handleStateSelect(stateId, drillDown = false) {
     setSelectedStateId(stateId);
-    const firstCity = (CITY_BY_STATE[stateId] || [])[0];
-    if (firstCity) {
-      setSelectedCityId(firstCity.id);
-      const firstWard = (WARDS_BY_CITY[firstCity.id] || [])[0];
-      if (firstWard) setSelectedWardId(firstWard.id);
+    const stateCities = CITY_BY_STATE[stateId] || [];
+    const preferredCity =
+      uploadedCase && uploadedCase.stateId === stateId
+        ? stateCities.find((city) => city.id === uploadedCase.cityId) || stateCities[0]
+        : stateCities[0];
+    if (preferredCity) {
+      setSelectedCityId(preferredCity.id);
+      const wardList = WARDS_BY_CITY[preferredCity.id] || [];
+      const preferredWard =
+        uploadedCase && uploadedCase.cityId === preferredCity.id
+          ? wardList.find((ward) => ward.id === uploadedCase.wardId) || wardList[0]
+          : wardList[0];
+      if (preferredWard) setSelectedWardId(preferredWard.id);
     }
     if (drillDown) setMapDepth("state");
   }
 
   function handleCitySelect(cityId) {
     setSelectedCityId(cityId);
-    const firstWard = (WARDS_BY_CITY[cityId] || [])[0];
-    if (firstWard) setSelectedWardId(firstWard.id);
+    const wardList = WARDS_BY_CITY[cityId] || [];
+    const preferredWard =
+      uploadedCase && uploadedCase.cityId === cityId
+        ? wardList.find((ward) => ward.id === uploadedCase.wardId) || wardList[0]
+        : wardList[0];
+    if (preferredWard) setSelectedWardId(preferredWard.id);
     const city = Object.values(CITY_BY_STATE).flat().find((item) => item.id === cityId);
     if (mapRef.current && city) {
       mapRef.current.flyTo([city.lat, city.lng], 12, { duration: 0.8 });
@@ -336,8 +437,13 @@ export default function App() {
     const map = mapRef.current;
     const layer = markerLayerRef.current;
     layer.clearLayers();
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
 
     const cityList = CITY_BY_STATE[selectedStateId] || [];
+    const allWards = Object.values(WARDS_BY_CITY).flat();
 
     if (mapDepth === "india") {
       map.setView([22.9734, 78.6569], 5);
@@ -381,6 +487,27 @@ export default function App() {
         marker.on("click", () => handleWardSelect(ward.id));
       });
 
+      if (showHeatLayer && leaflet.heatLayer) {
+        const heatPoints = allWards.map((ward) => {
+          const complaints = getWardComplaintCount(ward);
+          let intensity = clamp(complaints / 140, 0.2, 1);
+          if (uploadedCase && uploadedCase.wardId === ward.id) intensity = clamp(intensity + 0.25, 0.2, 1);
+          return [ward.lat, ward.lng, intensity];
+        });
+        heatLayerRef.current = leaflet.heatLayer(heatPoints, {
+          radius: 30,
+          blur: 22,
+          maxZoom: 17,
+          minOpacity: 0.32,
+          gradient: {
+            0.2: "#2de08e",
+            0.45: "#e4e951",
+            0.7: "#ffb13b",
+            1.0: "#ff3b4f",
+          },
+        }).addTo(map);
+      }
+
       if (uploadedCase) {
         const uploadedWard = Object.values(WARDS_BY_CITY).flat().find((w) => w.id === uploadedCase.wardId);
         if (uploadedWard) {
@@ -395,8 +522,18 @@ export default function App() {
       }
     }
 
+    if (currentPosition) {
+      const me = leaflet.circleMarker([currentPosition.lat, currentPosition.lng], {
+        radius: 7,
+        color: "#4aa8ff",
+        weight: 2,
+        fillOpacity: 0.5,
+      }).addTo(layer);
+      me.bindTooltip("Your detected location");
+    }
+
     setTimeout(() => map.invalidateSize(), 80);
-  }, [activeLayer, mapDepth, selectedStateId, selectedCityId, selectedWardId, wardsForCity, uploadedCase]);
+  }, [activeLayer, mapDepth, selectedStateId, selectedCityId, selectedWardId, wardsForCity, uploadedCase, showHeatLayer, currentPosition]);
 
   return (
     <div className="phase2-app">
@@ -462,6 +599,12 @@ export default function App() {
             <div className="upload-grid">
               <article className="card">
                 <h3>Location Mapping</h3>
+                <div className="location-actions">
+                  <button className="nav-btn" disabled={locating} onClick={detectCurrentLocation}>
+                    {locating ? "Detecting..." : "Use Current Location (GPS/VPN)"}
+                  </button>
+                </div>
+                {locationMessage ? <p className="sub">{locationMessage}</p> : null}
                 <label className="field-label">State</label>
                 <select className="field-input" value={uploadStateId} onChange={(e) => onChangeUploadState(e.target.value)}>
                   {INDIA_STATES.map((state) => (
@@ -534,6 +677,7 @@ export default function App() {
               <label className="switch"><input type="checkbox" checked={showCo2e} onChange={(e) => setShowCo2e(e.target.checked)} /> CO2e</label>
               <label className="switch"><input type="checkbox" checked={showCh4} onChange={(e) => setShowCh4(e.target.checked)} /> CH4</label>
               <label className="switch"><input type="checkbox" checked={showN2o} onChange={(e) => setShowN2o(e.target.checked)} /> N2O</label>
+              <label className="switch"><input type="checkbox" checked={showHeatLayer} onChange={(e) => setShowHeatLayer(e.target.checked)} /> Complaint Heatmap</label>
               <label className="timeline">
                 Timeline: {timelineDays} days
                 <input type="range" min="30" max="365" step="30" value={timelineDays} onChange={(e) => setTimelineDays(Number(e.target.value))} />
